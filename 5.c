@@ -32,6 +32,7 @@ void populate_points() {
 		cluster_count[i] = 0;
 	}
 }
+
 double get_distance(int x1, int y1, int x2, int y2) {
 	int dx = x2-x1, dy = y2-y1;
 	return (double)sqrt(dx*dx + dy*dy);
@@ -55,6 +56,7 @@ void classify_points() {
 	cluster_count[cluster_index]++;
 	}
 }
+
 int main(int argc, char* argv[]) {
 	num_points = atol(argv[1]);
 	num_threads = atoi(argv[2]);
