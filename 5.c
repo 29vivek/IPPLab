@@ -66,6 +66,9 @@ int main(int argc, char* argv[]) {
 	double t2 = omp_get_wtime();
 	double t = (t2 - t1) * 1000;
 	cout<< "Time Taken: " << t << "ms" <<endl;
+	for(int i=0; i<K; i++)
+		cout<<cluster_count[i]<<" ";
+	cout<<endl;
 }
 
 
