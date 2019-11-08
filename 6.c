@@ -15,7 +15,7 @@ int main(int argc,char* argv[])
 	char* input=argv[1];
 	char* output=argv[2];
 	int numthreads=atoi(argv[3]);
-	int color,x,y,i;
+	int color,x,y;
 	int red,green,blue,average;
 	FILE *fp;
 	fp=fopen(input,"r");
@@ -58,3 +58,6 @@ int main(int argc,char* argv[])
 	printf("time taken for %d threads id %lf seconds",numthreads,s);
 return 0;
 }
+
+// gcc 6.c -lgd -fopenmp
+// ./a.out input.png output.png 4
