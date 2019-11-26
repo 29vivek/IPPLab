@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define NRA 3               /* number of rows in matrix A */
-#define NCA  3               /* number of columns in matrix A */
+#define NRA 5               /* number of rows in matrix A */
+#define NCA  5               /* number of columns in matrix A */
 
 #define MASTER 0               /* taskid of first task */
 #define FROM_MASTER 1          /* setting a message type */
