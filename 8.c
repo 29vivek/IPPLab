@@ -1,143 +1,59 @@
-# include <mpi.h>
-# include <stdlib.h>
-# include <stdio.h>
-void ring_io ( int p, int id );
-int main ( int argc, char *argv[] )
-{
-	int error;
-	int id;
-	int p;
-	/*
-	Initialize MPI.
-	*/
-	MPI_Init ( &argc, &argv );
-	/*
-	Get the number of processes.
-	*/
-	MPI_Comm_size ( MPI_COMM_WORLD, &p );
-	/*
-	Get the individual process ID.
-	*/
-	MPI_Comm_rank ( MPI_COMM_WORLD, &id );
-	/*
-	Print a message.
-	*/
-	if ( id == 0 )
-	{
-		printf ( "\n" );
-		printf ( "RING_MPI:\n" );
-		printf ( " C/MPI version\n" );
-		printf ( " Measure time required to transmit data around\n" );
-		printf ( " a ring of processes\n" );
-		printf ( "\n" );
-		printf ( " The number of processes is %d\n", p );
-	}
-	ring_io ( p, id );
-	/*
-	Shut down MPI.
-	*/
-	MPI_Finalize ( );
-	/*
-	Terminate.
-	*/
-	if ( id == 0 )
-	{
-		printf ( "\n" );
-		printf ( "RING_MPI:\n" );
-		printf ( " Normal end of execution.\n" );
-	}
-	return 0;
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+void ringIO(int p, int r) {
+    int messageSizes[4] = {100, 1000, 10000, 100000};
+    int *m;
+    int source, dest;
+    double t1, t2, tAvg, tMin, tMax, t;
+    MPI_Status status;
+
+    for(int i=0; i<4; i++) {
+        tAvg = 0;
+        tMin = 10; // some random max value
+        tMax = 0;
+        m = (int *) malloc(sizeof(int)*messageSizes[i]);
+        if(r == 0) {
+            dest = 1;
+            source = p-1;
+            
+            for(int j=0; j<10; j++) {
+                t1 = MPI_Wtime();
+                MPI_Send(m, messageSizes[i], MPI_INT, dest, 0, MPI_COMM_WORLD);
+                MPI_Recv(m, messageSizes[i], MPI_INT, source, 0, MPI_COMM_WORLD, &status);
+                t2 = MPI_Wtime();
+                t=t2-t1;
+                tAvg+=t;
+                if(t < tMin) {
+                    tMin = t;
+                }
+                if(t > tMax) {
+                    tMax = t;
+                }
+            }
+            tAvg/=10;
+            printf("ringio of %d integers is: %0.6f, max: %.6f, min: %.6f\n", messageSizes[i], tAvg, tMax, tMin);
+        } else {
+            dest = (r+1)%p;
+            source = r-1;
+            for(int j=0; j<10; j++) {
+                MPI_Recv(m, messageSizes[i], MPI_INT, source, 0, MPI_COMM_WORLD, &status);
+                MPI_Send(m, messageSizes[i], MPI_INT, dest, 0, MPI_COMM_WORLD);
+            }
+        }
+    }
 }
-void ring_io ( int p, int id )
-{
-	int n;
-	int	j;
-	int i;
-	int dest; 
-	int n_test[5] = { 100, 1000, 10000, 100000, 1000000 };
-	int n_test_num = 5;
-	int source;
-	MPI_Status status;
-	double tave;
-	int test;
-	int test_num = 10;
-	double tmax;
-	double tmin;
-	double wtime;
-	double *x;
-	if ( id == 0 )
-	{
-		printf ( "\n" );
-		printf ( " Timings based on %d experiments\n", test_num );
-		printf ( " N double precision values were sent\n" );
-		printf ( " in a ring transmission starting and ending at process 0\n");
-		printf ( " and using a total of %d processes.\n", p );
-		printf ( "\n" );
-		printf ( "			N		T min		T ave		T max\n");
-		printf ( "\n" );
-	}
-	/*
-	Choose message size.
-	*/
-	for ( i = 0; i < n_test_num; i++ )
-	{
-		n = n_test[i];
-		x = ( double * ) malloc ( n * sizeof ( double ) );
-		/*
-		Process 0 sends very first message,
-		then waits to receive the "echo" that has gone around the world.
-		*/
-		if ( id == 0 )
-		{
-			dest = 1;
-			source = p - 1;
-			tave = 0.0;
-			tmin = 1.0E+30;
-			tmax = 0.0;
-			for ( test = 1; test <= test_num; test++ )
-			{
-				/*
-				Just in case, set the entries of X in a way that identifies
-				which iteration of the test is being carried out.
-				*/
-				for ( j = 0; j < n; j++ )
-				{
-					x[j] = ( double ) ( test + j );
-				}
-				wtime = MPI_Wtime ( );
-				MPI_Send ( x, n, MPI_DOUBLE, dest, 0, MPI_COMM_WORLD );
-				MPI_Recv ( x, n, MPI_DOUBLE, source, 0, MPI_COMM_WORLD, &status );
-				wtime = MPI_Wtime ( ) - wtime;
-				/*
-				Record the time it took.
-				*/
-				tave = tave + wtime;
-				if ( wtime < tmin )
-				{
-					tmin = wtime;
-				}
-				if ( tmax < wtime )
-				{
-					tmax = wtime;
-				}
-			}
-			tave = tave / ( double ) ( test_num );
-			printf ( "   %8d   %14.6g   %14.6g   %14.6g\n", n, tmin, tave, tmax );
-		}
-		/*
-		Worker ID must receive first from ID-1, then send to ID+1.
-		*/
-		else
-		{
-			source = id - 1;
-			dest = ( ( id + 1 ) % p );
-			for ( test = 1; test <= test_num; test++ )
-			{
-				MPI_Recv ( x, n, MPI_DOUBLE, source, 0, MPI_COMM_WORLD, &status );
-				MPI_Send ( x, n, MPI_DOUBLE, dest, 0, MPI_COMM_WORLD );
-			}
-		}
-	}
-	free ( x );
-	return;
+
+
+int main(int argc, char* argv[]) {
+    int rank, processes;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &processes);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    ringIO(processes, rank);
+    
+    MPI_Finalize();
+    return 0;
 }
