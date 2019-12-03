@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define NRA 5               /* number of rows in matrix A */
-#define NCA  5               /* number of columns in matrix A */
+#define NRA 4               /* number of rows in matrix A */
+#define NCA 4               /* number of columns in matrix A */
 
 #define MASTER 0               /* taskid of first task */
 #define FROM_MASTER 1          /* setting a message type */
@@ -99,10 +99,11 @@ int main (int argc, char *argv[])
       }
 
       // Print results
-      printf("RESULTS: \n");
+      printf("RESULTS: %d\n", c[0]);
 	   int m=c[0];
       for (i=1; i<NRA; i++)
       {
+         printf("%d\n", c[i]);
          if(m<c[i])
 	         m=c[i];
       }

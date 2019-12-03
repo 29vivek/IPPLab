@@ -30,7 +30,7 @@ int main(int argc,char* argv[])
 	int height=gdImageSY(img);
 	double t,s;
 	t=omp_get_wtime();
-	#pragma omp parallel for schedule(dynamic) private(red,green,blue,color,y,average) num_threads(numthreads)
+	#pragma omp parallel for schedule(dynamic) num_threads(numthreads)
 	for(x=0;x<width;x++)
 	{
 		for(y=0;y<height;y++)

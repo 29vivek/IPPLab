@@ -3,7 +3,9 @@
 #include "mpi.h"
 #include <math.h>
 #include<time.h>
+
 int main(int argc, char * argv[]) {
+  
   int niter = 1000000;
   int myid; //holds process's rank id
   double x, y; //x,y value for the random coordinate

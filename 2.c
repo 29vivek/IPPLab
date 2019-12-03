@@ -4,7 +4,7 @@
 
 int main(){
 	float t1,t2;
-	int n = 50;
+	int n = 100;
 	int m1[n][n],m2[n][n],mn[n][n];
 	int i,j,k;
 	for (int i=0; i<n; i++) {
